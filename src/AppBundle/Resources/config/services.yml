@@ -1,0 +1,11 @@
+services:
+  blabla_movie.user.manager:
+    class: AppBundle\Manager\UserManager
+  blabla_movie.user.request_adapter:
+    class: AppBundle\RequestAdapter\UserRequestAdapter
+  blabla_movie.movie.manager:
+    class: AppBundle\Manager\MovieManager
+  blabla_movie.movie.request_adapter:
+    class: AppBundle\RequestAdapter\MovieRequestAdapter
+  blabla_movie.movie.client:
+    class: AppBundle\Client\OmdbAPIClient
