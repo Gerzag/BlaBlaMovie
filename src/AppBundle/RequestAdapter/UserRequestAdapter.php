@@ -31,6 +31,9 @@ class UserRequestAdapter
      * @param Request $request
      *
      * @return User
+     *
+     * @throws InvalidArgumentException
+     * @throws UsernameAllreadyExistsException
      */
     public function getUser(Request $request)
     {
@@ -38,7 +41,13 @@ class UserRequestAdapter
         $this->checkRequest($request->request);
         $homonyms = $this->entityManager->getRepository(User::class)->findBy(['username' => $request->request->get('username')]);
         if (empty($homonyms)) {
-
+            $user->setUsername($request->request->get('username'));
+            $user->setEmail($request->request->get('email'));
+            try {
+                $user->setBirthDate(new \DateTime($request->request->get('birthDate')));
+            } catch (\Exception $e) {
+                throw new InvalidArgumentException("Invalid birthdate.");
+            }
         } else {
             throw new UsernameAllreadyExistsException($request->request->get('username'));
         }

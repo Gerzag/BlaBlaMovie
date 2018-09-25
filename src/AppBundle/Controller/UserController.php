@@ -36,8 +36,10 @@ class UserController extends Controller
     public function createUserAction(Request $request)
     {
         try {
+            /** @var User $user */
             $user = $this->get('blabla_movie.user.request_adapter')->getUser($request);
-            $this->get('blabla_movie.user.manager')->persist($user);
+            $this->get('doctrine')->persist($user);
+            $this->get('doctrine')->flush();
         } catch (\Exception $e) {
             return new JsonResponse($e->getMessage(), Response::HTTP_NOT_FOUND);
         }
@@ -57,15 +59,15 @@ class UserController extends Controller
      */
     public function postUserChoiceAction(Request $request, int $userId)
     {
-        $manager =  $this->get('blabla_movie.movie.manager');
         try {
             $this->get('doctrine')->getRepository(User::class)->find($userId);
         } catch (\Exception $e) {
             return new JsonResponse($e->getMessage(), Response::HTTP_NOT_FOUND);
         }
         $userChoice = $this->get('blabla_movie.movie.request_adapter')->getUserChoice($request);
-        $manager->persist($userChoice);
-        $userChoiceArray = $manager->toArray($userChoice);
+        $this->get('doctrine')->persist($userChoice);
+        $this->get('doctrine')->flush();
+        //$userChoiceArray = $manager->toArray($userChoice);
 
         return new JsonResponse($userChoiceArray, Response::HTTP_CREATED);
     }

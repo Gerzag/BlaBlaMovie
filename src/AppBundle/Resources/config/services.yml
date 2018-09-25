@@ -1,11 +1,12 @@
 services:
-  blabla_movie.user.manager:
-    class: AppBundle\Manager\UserManager
+  AppBundle\Client\HttpClient:
+    class: AppBundle\Client\HttpClient
   blabla_movie.user.request_adapter:
     class: AppBundle\RequestAdapter\UserRequestAdapter
-  blabla_movie.movie.manager:
-    class: AppBundle\Manager\MovieManager
   blabla_movie.movie.request_adapter:
     class: AppBundle\RequestAdapter\MovieRequestAdapter
   blabla_movie.movie.client:
     class: AppBundle\Client\OmdbAPIClient
+    arguments:
+      - "@AppBundle\Client\HttpClient"
+      - "%omdb_api_key%"

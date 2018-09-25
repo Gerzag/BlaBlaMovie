@@ -55,8 +55,8 @@ class MovieController extends Controller
     public function listMovieUsersAction(string $movieId)
     {
         try {
-            $movie = $this->get('blabla_movie.movie.client')->fetch($movieId);
-            $userChoices = $this->get('doctrine')->getRepository(UserChoice::class)->findAllBy(['movie' => $movie]);
+            $this->get('blabla_movie.movie.client')->fetchById($movieId);
+            $userChoices = $this->get('doctrine')->getRepository(UserChoice::class)->findAllBy(['movie' => $movieId]);
         } catch (\Exception $e) {
             return new JsonResponse($e->getMessage(), Response::HTTP_NOT_FOUND);
         }
