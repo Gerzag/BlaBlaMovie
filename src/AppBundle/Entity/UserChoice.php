@@ -17,6 +17,8 @@ class UserChoice
      *
      * @ORM\Id()
      *
+     * @ORM\Column(type="integer")
+     *
      * @ORM\GeneratedValue()
      */
     protected $id;
@@ -33,7 +35,7 @@ class UserChoice
     /**
      * @var string
      *
-     * @ORM\Coluumn(type="string")
+     * @ORM\Column(type="string")
      */
     protected $movie;
 

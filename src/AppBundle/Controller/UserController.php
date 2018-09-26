@@ -10,6 +10,9 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\User;
 use AppBundle\Entity\UserChoice;
+use AppBundle\RequestAdapter\MovieRequestAdapter;
+use AppBundle\RequestAdapter\UserRequestAdapter;
+use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -25,7 +28,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class UserController extends Controller
 {
     /**
-     * @param Request $request
+     * @param EntityManagerInterface $entityManager
+     * @param UserRequestAdapter     $requestAdapter
+     * @param Request                $request
      *
      * @Method("POST")
      *
@@ -33,13 +38,13 @@ class UserController extends Controller
      *
      * @return JsonResponse
      */
-    public function createUserAction(Request $request)
+    public function createUserAction(EntityManagerInterface $entityManager, UserRequestAdapter $requestAdapter, Request $request)
     {
         try {
             /** @var User $user */
-            $user = $this->get('blabla_movie.user.request_adapter')->getUser($request);
-            $this->get('doctrine')->persist($user);
-            $this->get('doctrine')->flush();
+            $user = $requestAdapter->getUser($request);
+            $entityManager->persist($user);
+            $entityManager->flush();
         } catch (\Exception $e) {
             return new JsonResponse($e->getMessage(), Response::HTTP_NOT_FOUND);
         }
@@ -57,24 +62,26 @@ class UserController extends Controller
      *
      * @return JsonResponse
      */
-    public function postUserChoiceAction(Request $request, int $userId)
+    public function postUserChoiceAction(Request $request, MovieRequestAdapter $requestAdapter, int $userId)
     {
         try {
             $this->get('doctrine')->getRepository(User::class)->find($userId);
         } catch (\Exception $e) {
             return new JsonResponse($e->getMessage(), Response::HTTP_NOT_FOUND);
         }
-        $userChoice = $this->get('blabla_movie.movie.request_adapter')->getUserChoice($request);
+        $userChoice = $requestAdapter->getUserChoice($request);
         $this->get('doctrine')->persist($userChoice);
         $this->get('doctrine')->flush();
+        //@TODO
         //$userChoiceArray = $manager->toArray($userChoice);
 
-        return new JsonResponse($userChoiceArray, Response::HTTP_CREATED);
+        //return new JsonResponse($userChoiceArray, Response::HTTP_CREATED);
     }
 
     /**
-     * @param int $userId
-     * @param int $choiceId
+     * @param EntityManagerInterface $entityManager
+     * @param int                    $userId
+     * @param int                    $choiceId
      *
      * @Route("/users/{userId}/movie/{choiceId}", name="blabla_movie.movie.delete", requirements={"userId": "\d+", "choiceId": "\d+"})
      *
@@ -82,13 +89,13 @@ class UserController extends Controller
      *
      * @return JsonResponse
      */
-    public function deleteUserChoiceAction(int $userId, int $choiceId)
+    public function deleteUserChoiceAction(EntityManagerInterface $entityManager, int $userId, int $choiceId)
     {
         try {
-            $this->get('doctrine')->getRepository(User::class)->find($userId);
-            $choice = $this->get('doctrine')->getRepository(UserChoice::class)->find($choiceId);
-            $this->get('doctrine')->remove($choice);
-            $this->get('doctrine')->flush();
+            $entityManager->getRepository(User::class)->find($userId);
+            $choice = $entityManager->getRepository(UserChoice::class)->find($choiceId);
+            $entityManager->remove($choice);
+            $entityManager->flush();
         } catch (\Exception $e) {
             return new JsonResponse($e->getMessage(), Response::HTTP_NOT_FOUND);
         }
@@ -97,8 +104,8 @@ class UserController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @param int $userId
+     * @param EntityManagerInterface $entityManager
+     * @param int                    $userId
      *
      * @Route("/users/{userId}/movies", name="blabla_movie.user.list", requirements={"userId": "\d+"})
      *
@@ -106,17 +113,17 @@ class UserController extends Controller
      *
      * @return JsonResponse
      */
-    public function listUserChoiceAction(Request $request, int $userId)
+    public function listUserChoiceAction(EntityManagerInterface $entityManager, int $userId)
     {
-        $manager =  $this->get('blabla_movie.movie.manager');
         try {
-            $user = $this->get('doctrine')->getRepository(User::class)->find($userId);
+            $user = $entityManager->getRepository(User::class)->find($userId);
         } catch (\Exception $e) {
             return new JsonResponse($e->getMessage(), Response::HTTP_NOT_FOUND);
         }
-        $userChoices = $this->get('doctrine')->getRepository(UserChoice::class)->findAllBy(['user' => $user]);
-        $userChoicesArray = $manager->toArray($userChoices);
+        $userChoices = $entityManager->getRepository(UserChoice::class)->findAllBy(['user' => $user]);
+        //@TODO
+        //$userChoicesArray = $manager->toArray($userChoices);
 
-        return new JsonResponse($userChoicesArray, Response::HTTP_CREATED);
+        //return new JsonResponse($userChoicesArray, Response::HTTP_CREATED);
     }
 }

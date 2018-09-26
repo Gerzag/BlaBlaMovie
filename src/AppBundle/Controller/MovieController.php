@@ -8,7 +8,9 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Client\OmdbAPIClient;
 use AppBundle\Entity\UserChoice;
+use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -23,7 +25,8 @@ class MovieController extends Controller
 {
 
     /**
-     * @param string $movieId
+     * @param EntityManagerInterface $entityManager
+     * @param OmdbAPIClient          $client
      *
      * @Route("/movies/best_of", name="blabla_movie.movie.best_of")
      *
@@ -31,11 +34,11 @@ class MovieController extends Controller
      *
      * @return JsonResponse
      */
-    public function bestMovieAction()
+    public function bestMovieAction(EntityManagerInterface $entityManager)
     {
         try {
-            $movieId = $this->get('doctrine')->getRepository(UserChoice::class)->getBestMovie();
-            $movie = $this->get('blabla_movie.movie.client')->fetch($movieId);
+            $movieId = $entityManager->getRepository(UserChoice::class)->getBestMovie();
+            $movie = $this->get('blabla_movie.client.omdb_api')->fetchById($movieId);
         } catch (\Exception $e) {
             return new JsonResponse($e->getMessage(), Response::HTTP_NOT_FOUND);
         }
@@ -52,11 +55,11 @@ class MovieController extends Controller
      *
      * @return JsonResponse
      */
-    public function listMovieUsersAction(string $movieId)
+    public function listMovieUsersAction(EntityManagerInterface $entityManager, string $movieId)
     {
         try {
-            $this->get('blabla_movie.movie.client')->fetchById($movieId);
-            $userChoices = $this->get('doctrine')->getRepository(UserChoice::class)->findAllBy(['movie' => $movieId]);
+            $this->get('blabla_movie.client.omdb_api')->fetchById($movieId);
+            $userChoices = $entityManager->getRepository(UserChoice::class)->findAllBy(['movie' => $movieId]);
         } catch (\Exception $e) {
             return new JsonResponse($e->getMessage(), Response::HTTP_NOT_FOUND);
         }

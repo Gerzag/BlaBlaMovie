@@ -5,7 +5,6 @@ namespace AppBundle\RequestAdapter;
 use AppBundle\Entity\User;
 use AppBundle\Exception\UsernameAllreadyExistsException;
 use Doctrine\ORM\EntityManagerInterface;
-use http\Exception\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -32,21 +31,25 @@ class UserRequestAdapter
      *
      * @return User
      *
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      * @throws UsernameAllreadyExistsException
      */
     public function getUser(Request $request)
     {
         $user = new User();
-        $this->checkRequest($request->request);
+        $data = json_decode(
+            $request->getContent(),
+            true
+        );
+        $this->checkRequest($data);
         $homonyms = $this->entityManager->getRepository(User::class)->findBy(['username' => $request->request->get('username')]);
         if (empty($homonyms)) {
-            $user->setUsername($request->request->get('username'));
-            $user->setEmail($request->request->get('email'));
+            $user->setUsername($data['username']);
+            $user->setEmail($data['email']);
             try {
-                $user->setBirthDate(new \DateTime($request->request->get('birthDate')));
+                $user->setBirthDate(new \DateTime($data['birthdate']));
             } catch (\Exception $e) {
-                throw new InvalidArgumentException("Invalid birthdate.");
+                throw new \InvalidArgumentException("Invalid birthdate.");
             }
         } else {
             throw new UsernameAllreadyExistsException($request->request->get('username'));
@@ -56,15 +59,15 @@ class UserRequestAdapter
     }
 
     /**
-     * @param ParameterBag $bag
+     * @param array $data
      */
-    private function checkRequest(ParameterBag $bag)
+    private function checkRequest(array $data)
     {
-        if (!$bag->get('username')) {
-            throw new InvalidArgumentException("Username not provided.");
+        if (empty($data['username'])) {
+            throw new \InvalidArgumentException("Username not provided.");
         }
-        if (!$bag->get('email')) {
-            throw new InvalidArgumentException("Email not provided.");
+        if (empty($data['email'])) {
+            throw new \InvalidArgumentException("Email not provided.");
         }
     }
 }

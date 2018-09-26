@@ -10,13 +10,17 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @package AppBundle\Entity
  *
  * @ORM\Entity()
+ *
+ * @ORM\HasLifecycleCallbacks
  */
 class User implements \JsonSerializable
 {
     /**
      * @var int
      *
-     * @ORM\Id()
+     * @ORM\Id
+     *
+     * @ORM\Column(type="integer")
      *
      * @ORM\GeneratedValue(strategy="AUTO")
      */
@@ -161,6 +165,16 @@ class User implements \JsonSerializable
     public function addChoice(UserChoice $choice): void
     {
         $this->choices[] = $choice;
+    }
+
+    /**
+     * Gets triggered only on insert
+
+     * @ORM\PrePersist
+     */
+    public function onPrePersist()
+    {
+        $this->createdAt = new \DateTime("now");
     }
 
     /**
