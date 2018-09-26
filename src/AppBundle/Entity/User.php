@@ -59,7 +59,7 @@ class User implements \JsonSerializable
     /**
      * @var UserChoice[]
      *
-     * @ORM\ManyToMany(mappedBy="user", targetEntity="AppBundle\Entity\UserChoice")
+     * @ORM\OneToMany(mappedBy="user", targetEntity="AppBundle\Entity\UserChoice", indexBy="id")
      */
     protected $choices;
 

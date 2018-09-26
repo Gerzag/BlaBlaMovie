@@ -10,7 +10,6 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\User;
 use AppBundle\Entity\UserChoice;
-use AppBundle\RequestAdapter\MovieRequestAdapter;
 use AppBundle\RequestAdapter\UserRequestAdapter;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -19,7 +18,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Class UserController
@@ -53,8 +51,9 @@ class UserController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @param int $userId
+     * @param EntityManagerInterface $entityManager,
+     * @param Request                $request
+     * @param int                    $userId
      *
      * @Route("/users/{userId}/movie", name="blabla_movie.user.choice", requirements={"userId": "\d+"})
      *
@@ -62,20 +61,21 @@ class UserController extends Controller
      *
      * @return JsonResponse
      */
-    public function postUserChoiceAction(Request $request, MovieRequestAdapter $requestAdapter, int $userId)
+    public function postUserChoiceAction(EntityManagerInterface $entityManager,  Request $request, int $userId)
     {
         try {
-            $this->get('doctrine')->getRepository(User::class)->find($userId);
+            /** @var User $user */
+            $user = $entityManager->getRepository(User::class)->find($userId);
         } catch (\Exception $e) {
-            return new JsonResponse($e->getMessage(), Response::HTTP_NOT_FOUND);
+            return new JsonResponse($e->getMessage(), Response::HTTP_UNAUTHORIZED);
         }
-        $userChoice = $requestAdapter->getUserChoice($request);
-        $this->get('doctrine')->persist($userChoice);
-        $this->get('doctrine')->flush();
-        //@TODO
-        //$userChoiceArray = $manager->toArray($userChoice);
+        /** @var UserChoice $userChoice */
+        $userChoice = $this->get('blabla_movie.movie.request_adapter')->getUserChoice($request);
+        $entityManager->persist($userChoice);
+        $userChoice->setUser($user);
+        $entityManager->flush();
 
-        //return new JsonResponse($userChoiceArray, Response::HTTP_CREATED);
+        return new JsonResponse($userChoice->jsonSerialize(), Response::HTTP_CREATED);
     }
 
     /**

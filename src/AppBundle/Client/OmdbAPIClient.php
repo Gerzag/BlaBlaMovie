@@ -10,7 +10,7 @@ use AppBundle\Entity\Movie;
  */
 class OmdbAPIClient
 {
-    protected $url = "http://www.omdbapi";
+    protected $url = "http://www.omdbapi.com";
 
     /** @var HttpClient */
     protected $client;
@@ -37,7 +37,7 @@ class OmdbAPIClient
      */
     public function fetchById(string $movieId)
     {
-        $response = $this->client->fetch($this->url, ['i' => $movieId]);
+        $response = $this->client->fetch($this->url, ['i' => $movieId, 'apikey' => $this->apiKey]);
 
         return $this->generateMovieFromJson($response);
     }
@@ -51,7 +51,7 @@ class OmdbAPIClient
      */
     public function fetchByName(string $movieName)
     {
-        $response = $this->client->fetch($this->url, ['s' => $movieName]);
+        $response = $this->client->fetch($this->url, ['s' => $movieName, 'apikey' => $this->apiKey]);
 
         return $this->generateMovieFromJson($response);
     }
@@ -66,6 +66,10 @@ class OmdbAPIClient
     {
         $movieResponse = json_decode($jsonResponse, true);
         $movie = new Movie();
+        if (!empty($movieResponse) && isset($movieResponse['Search'])) {
+            $movieResponse = $movieResponse['Search'][0];
+        }
+        $movie->setId($movieResponse['imdbID']);
         $movie->setTitle($movieResponse['Title']);
         $movie->setPoster($movieResponse['Poster']);
 

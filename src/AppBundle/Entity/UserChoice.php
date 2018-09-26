@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Entity(repositoryClass="AppBundle\Repository\UserChoiceRepository")
  */
-class UserChoice
+class UserChoice implements \JsonSerializable
 {
     /**
      * @var int
@@ -26,9 +26,11 @@ class UserChoice
     /**
      * @var User
      *
-     * @ORM\Column(type="integer")
-     *
      * @ORM\ManyToOne(targetEntity="AppBundle\Entity\User", inversedBy="choices")
+     *
+     * @ORM\JoinColumns({
+     *     @ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE")
+     * })
      */
     protected $user;
 
@@ -85,5 +87,16 @@ class UserChoice
     public function setMovie(string $movie): void
     {
         $this->movie = $movie;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function jsonSerialize()
+    {
+        return [
+            'user' => $this->user,
+            'movie' => $this->movie,
+        ];
     }
 }

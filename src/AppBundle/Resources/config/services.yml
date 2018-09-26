@@ -1,10 +1,16 @@
 services:
   AppBundle\Client\HttpClient:
     class: AppBundle\Client\HttpClient
+
   AppBundle\RequestAdapter\UserRequestAdapter:
     class: AppBundle\RequestAdapter\UserRequestAdapter
-  AppBundle\RequestAdapter\MovieRequestAdapter:
+
+  blabla_movie.movie.request_adapter:
     class: AppBundle\RequestAdapter\MovieRequestAdapter
+    arguments:
+      - "@blabla_movie.client.omdb_api"
+    public: true
+
   blabla_movie.client.omdb_api:
     class: AppBundle\Client\OmdbAPIClient
     arguments:
